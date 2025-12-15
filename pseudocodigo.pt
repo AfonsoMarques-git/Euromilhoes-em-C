@@ -1,0 +1,214 @@
+CONSTANTES:
+    NUM_NUMEROS = 5
+    NUM_ESTRELAS = 2
+    MAX_NUMEROS = 50
+    MAX_ESTRELAS = 12
+
+PROCEDIMENTO ordenar(array, tamanho):
+    PARA i DE 0 ATÉ tamanho-2:
+        PARA j DE 0 ATÉ tamanho-i-2:
+            SE array[j] > array[j+1] ENTÃO:
+                temp = array[j]
+                array[j] = array[j+1]
+                array[j+1] = temp
+            FIM SE
+        FIM PARA
+    FIM PARA
+FIM PROCEDIMENTO
+
+FUNÇÃO numeroRepetido(array, tamanho, numero):
+    PARA i DE 0 ATÉ tamanho-1:
+        SE array[i] = numero ENTÃO:
+            RETORNAR VERDADEIRO
+        FIM SE
+    FIM PARA
+    RETORNAR FALSO
+FIM FUNÇÃO
+
+PROCEDIMENTO gerarAposta(numeros, estrelas):
+    // Gerar números principais
+    PARA i DE 0 ATÉ NUM_NUMEROS-1:
+        REPETIR:
+            num = número aleatório entre 1 e MAX_NUMEROS
+        ATÉ QUE numeroRepetido(numeros, i, num) = FALSO
+        numeros[i] = num
+    FIM PARA
+    
+    // Gerar estrelas
+    PARA i DE 0 ATÉ NUM_ESTRELAS-1:
+        REPETIR:
+            est = número aleatório entre 1 e MAX_ESTRELAS
+        ATÉ QUE numeroRepetido(estrelas, i, est) = FALSO
+        estrelas[i] = est
+    FIM PARA
+    
+    ordenar(numeros, NUM_NUMEROS)
+    ordenar(estrelas, NUM_ESTRELAS)
+FIM PROCEDIMENTO
+
+PROCEDIMENTO mostrarAposta(numeros, estrelas, titulo):
+    IMPRIMIR titulo
+    IMPRIMIR "Numeros: "
+    PARA i DE 0 ATÉ NUM_NUMEROS-1:
+        IMPRIMIR numeros[i] COM 2 dígitos
+    FIM PARA
+    IMPRIMIR NOVA LINHA
+    IMPRIMIR "Estrelas: "
+    PARA i DE 0 ATÉ NUM_ESTRELAS-1:
+        IMPRIMIR estrelas[i] COM 2 dígitos
+    FIM PARA
+    IMPRIMIR DUAS LINHAS VAZIAS
+FIM PROCEDIMENTO
+
+FUNÇÃO contarAcertos(aposta, sorteio, tamanho):
+    acertos = 0
+    PARA i DE 0 ATÉ tamanho-1:
+        PARA j DE 0 ATÉ tamanho-1:
+            SE aposta[i] = sorteio[j] ENTÃO:
+                acertos = acertos + 1
+                SAIR DO LOOP INTERNO
+            FIM SE
+        FIM PARA
+    FIM PARA
+    RETORNAR acertos
+FIM FUNÇÃO
+
+PROCEDIMENTO lerApostaUsuario(numeros, estrelas):
+    IMPRIMIR "=== INSIRA SUA APOSTA ==="
+    
+    // Ler números
+    IMPRIMIR "Insira ", NUM_NUMEROS, " numeros (1-50):"
+    PARA i DE 0 ATÉ NUM_NUMEROS-1:
+        REPETIR:
+            IMPRIMIR "Numero ", i+1, ": "
+            LER numeros[i]
+            SE numeros[i] < 1 OU numeros[i] > MAX_NUMEROS ENTÃO:
+                IMPRIMIR "Número inválido! Deve ser entre 1 e 50."
+            SENÃO SE numeroRepetido(numeros, i, numeros[i]) = VERDADEIRO ENTÃO:
+                IMPRIMIR "Número repetido! Escolha outro."
+                numeros[i] = 0
+            FIM SE
+        ATÉ QUE numeros[i] ≥ 1 E numeros[i] ≤ MAX_NUMEROS
+    FIM PARA
+    
+    // Ler estrelas
+    IMPRIMIR "Insira ", NUM_ESTRELAS, " estrelas (1-12):"
+    PARA i DE 0 ATÉ NUM_ESTRELAS-1:
+        REPETIR:
+            IMPRIMIR "Estrela ", i+1, ": "
+            LER estrelas[i]
+            SE estrelas[i] < 1 OU estrelas[i] > MAX_ESTRELAS ENTÃO:
+                IMPRIMIR "Estrela inválida! Deve ser entre 1 e 12."
+            SENÃO SE numeroRepetido(estrelas, i, estrelas[i]) = VERDADEIRO ENTÃO:
+                IMPRIMIR "Estrela repetida! Escolha outra."
+                estrelas[i] = 0
+            FIM SE
+        ATÉ QUE estrelas[i] ≥ 1 E estrelas[i] ≤ MAX_ESTRELAS
+    FIM PARA
+    
+    ordenar(numeros, NUM_NUMEROS)
+    ordenar(estrelas, NUM_ESTRELAS)
+FIM PROCEDIMENTO
+
+PROCEDIMENTO limparBuffer():
+    ENQUANTO houver caracteres no buffer de entrada:
+        LER e descartar caractere
+    FIM ENQUANTO
+FIM PROCEDIMENTO
+
+PROGRAMA PRINCIPAL:
+    DECLARAR numerosSorteio[NUM_NUMEROS]
+    DECLARAR estrelasSorteio[NUM_ESTRELAS]
+    DECLARAR numerosAposta[NUM_NUMEROS]
+    DECLARAR estrelasAposta[NUM_ESTRELAS]
+    DECLARAR opcao, acertosNumeros, acertosEstrelas COMO INTEIRO
+    
+    INICIALIZAR gerador de números aleatórios com hora atual
+    
+    REPETIR:
+        IMPRIMIR "======================="
+        IMPRIMIR "    EURO MILHOES"
+        IMPRIMIR "======================="
+        IMPRIMIR "1. Gerar aposta aleatória"
+        IMPRIMIR "2. Inserir minha aposta"
+        IMPRIMIR "3. Sair"
+        IMPRIMIR "Escolha: "
+        
+        LER opcao
+        
+        SE falha na leitura ENTÃO:
+            IMPRIMIR "Opção inválida!"
+            limparBuffer()
+            CONTINUAR
+        FIM SE
+        
+        ESCOLHER opcao:
+            CASO 1:
+                gerarAposta(numerosAposta, estrelasAposta)
+                mostrarAposta(numerosAposta, estrelasAposta, "=== SUA APOSTA ===")
+                
+            CASO 2:
+                lerApostaUsuario(numerosAposta, estrelasAposta)
+                mostrarAposta(numerosAposta, estrelasAposta, "=== SUA APOSTA ===")
+                
+            CASO 3:
+                IMPRIMIR "Adeus!"
+                TERMINAR PROGRAMA
+                
+            CASO PADRÃO:
+                IMPRIMIR "Opção inválida!"
+                CONTINUAR
+        FIM ESCOLHER
+        
+        // Realizar sorteio
+        IMPRIMIR "=== SORTEIO ==="
+        gerarAposta(numerosSorteio, estrelasSorteio)
+        mostrarAposta(numerosSorteio, estrelasSorteio, "Números sorteados:")
+        
+        // Verificar resultados
+        acertosNumeros = contarAcertos(numerosAposta, numerosSorteio, NUM_NUMEROS)
+        acertosEstrelas = contarAcertos(estrelasAposta, estrelasSorteio, NUM_ESTRELAS)
+        
+        IMPRIMIR "=== RESULTADOS ==="
+        IMPRIMIR "Acertos nos números: ", acertosNumeros, "/", NUM_NUMEROS
+        IMPRIMIR "Acertos nas estrelas: ", acertosEstrelas, "/", NUM_ESTRELAS
+        
+        // Determinar prêmio
+        IMPRIMIR "=== PREMIO ==="
+        SE acertosNumeros = 5 E acertosEstrelas = 2 ENTÃO:
+            IMPRIMIR "1º PREMIO! Jackpot!"
+        SENÃO SE acertosNumeros = 5 E acertosEstrelas = 1 ENTÃO:
+            IMPRIMIR "2º PREMIO!"
+        SENÃO SE acertosNumeros = 5 E acertosEstrelas = 0 ENTÃO:
+            IMPRIMIR "3º PREMIO!"
+        SENÃO SE acertosNumeros = 4 E acertosEstrelas = 2 ENTÃO:
+            IMPRIMIR "4º PREMIO!"
+        SENÃO SE acertosNumeros = 4 E acertosEstrelas = 1 ENTÃO:
+            IMPRIMIR "5º PREMIO!"
+        SENÃO SE acertosNumeros = 4 E acertosEstrelas = 0 ENTÃO:
+            IMPRIMIR "6º PREMIO!"
+        SENÃO SE acertosNumeros = 3 E acertosEstrelas = 2 ENTÃO:
+            IMPRIMIR "7º PREMIO!"
+        SENÃO SE acertosNumeros = 2 E acertosEstrelas = 2 ENTÃO:
+            IMPRIMIR "8º PREMIO!"
+        SENÃO SE acertosNumeros = 3 E acertosEstrelas = 1 ENTÃO:
+            IMPRIMIR "9º PREMIO!"
+        SENÃO SE acertosNumeros = 3 E acertosEstrelas = 0 ENTÃO:
+            IMPRIMIR "10º PREMIO!"
+        SENÃO SE acertosNumeros = 1 E acertosEstrelas = 2 ENTÃO:
+            IMPRIMIR "11º PREMIO!"
+        SENÃO SE acertosNumeros = 2 E acertosEstrelas = 1 ENTÃO:
+            IMPRIMIR "12º PREMIO!"
+        SENÃO SE acertosNumeros = 2 E acertosEstrelas = 0 ENTÃO:
+            IMPRIMIR "13º PREMIO!"
+        SENÃO:
+            IMPRIMIR "Não ganhou nenhum prêmio."
+        FIM SE
+        
+        IMPRIMIR "Pressione Enter para continuar..."
+        limparBuffer()
+        AGUARDAR Enter
+        
+    ATÉ QUE opcao = 3
+    
+FIM PROGRAMA
