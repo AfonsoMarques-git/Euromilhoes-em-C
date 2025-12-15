@@ -1,0 +1,214 @@
+CONSTANTS:
+    MAIN_NUMBERS_COUNT = 5
+    STAR_NUMBERS_COUNT = 2
+    MAX_MAIN_NUMBER = 50
+    MAX_STAR_NUMBER = 12
+
+PROCEDURE sortArray(array, size):
+    FOR i FROM 0 TO size-2:
+        FOR j FROM 0 TO size-i-2:
+            IF array[j] > array[j+1] THEN:
+                temp = array[j]
+                array[j] = array[j+1]
+                array[j+1] = temp
+            END IF
+        END FOR
+    END FOR
+END PROCEDURE
+
+FUNCTION isNumberRepeated(array, size, number):
+    FOR i FROM 0 TO size-1:
+        IF array[i] = number THEN:
+            RETURN TRUE
+        END IF
+    END FOR
+    RETURN FALSE
+END FUNCTION
+
+PROCEDURE generateTicket(mainNumbers, starNumbers):
+    // Generate main numbers
+    FOR i FROM 0 TO MAIN_NUMBERS_COUNT-1:
+        REPEAT:
+            num = random number between 1 and MAX_MAIN_NUMBER
+        UNTIL isNumberRepeated(mainNumbers, i, num) = FALSE
+        mainNumbers[i] = num
+    END FOR
+    
+    // Generate star numbers
+    FOR i FROM 0 TO STAR_NUMBERS_COUNT-1:
+        REPEAT:
+            star = random number between 1 and MAX_STAR_NUMBER
+        UNTIL isNumberRepeated(starNumbers, i, star) = FALSE
+        starNumbers[i] = star
+    END FOR
+    
+    sortArray(mainNumbers, MAIN_NUMBERS_COUNT)
+    sortArray(starNumbers, STAR_NUMBERS_COUNT)
+END PROCEDURE
+
+PROCEDURE displayTicket(mainNumbers, starNumbers, title):
+    PRINT title
+    PRINT "Main numbers: "
+    FOR i FROM 0 TO MAIN_NUMBERS_COUNT-1:
+        PRINT mainNumbers[i] formatted with 2 digits
+    END FOR
+    PRINT new line
+    PRINT "Star numbers: "
+    FOR i FROM 0 TO STAR_NUMBERS_COUNT-1:
+        PRINT starNumbers[i] formatted with 2 digits
+    END FOR
+    PRINT two blank lines
+END PROCEDURE
+
+FUNCTION countMatches(userNumbers, drawnNumbers, size):
+    matches = 0
+    FOR i FROM 0 TO size-1:
+        FOR j FROM 0 TO size-1:
+            IF userNumbers[i] = drawnNumbers[j] THEN:
+                matches = matches + 1
+                EXIT inner loop
+            END IF
+        END FOR
+    END FOR
+    RETURN matches
+END FUNCTION
+
+PROCEDURE getUserTicket(mainNumbers, starNumbers):
+    PRINT "=== ENTER YOUR TICKET ==="
+    
+    // Read main numbers
+    PRINT "Enter ", MAIN_NUMBERS_COUNT, " main numbers (1-50):"
+    FOR i FROM 0 TO MAIN_NUMBERS_COUNT-1:
+        REPEAT:
+            PRINT "Number ", i+1, ": "
+            READ mainNumbers[i]
+            IF mainNumbers[i] < 1 OR mainNumbers[i] > MAX_MAIN_NUMBER THEN:
+                PRINT "Invalid number! Must be between 1 and 50."
+            ELSE IF isNumberRepeated(mainNumbers, i, mainNumbers[i]) = TRUE THEN:
+                PRINT "Number already chosen! Pick another."
+                mainNumbers[i] = 0
+            END IF
+        UNTIL mainNumbers[i] ≥ 1 AND mainNumbers[i] ≤ MAX_MAIN_NUMBER
+    END FOR
+    
+    // Read star numbers
+    PRINT "Enter ", STAR_NUMBERS_COUNT, " star numbers (1-12):"
+    FOR i FROM 0 TO STAR_NUMBERS_COUNT-1:
+        REPEAT:
+            PRINT "Star ", i+1, ": "
+            READ starNumbers[i]
+            IF starNumbers[i] < 1 OR starNumbers[i] > MAX_STAR_NUMBER THEN:
+                PRINT "Invalid star! Must be between 1 and 12."
+            ELSE IF isNumberRepeated(starNumbers, i, starNumbers[i]) = TRUE THEN:
+                PRINT "Star already chosen! Pick another."
+                starNumbers[i] = 0
+            END IF
+        UNTIL starNumbers[i] ≥ 1 AND starNumbers[i] ≤ MAX_STAR_NUMBER
+    END FOR
+    
+    sortArray(mainNumbers, MAIN_NUMBERS_COUNT)
+    sortArray(starNumbers, STAR_NUMBERS_COUNT)
+END PROCEDURE
+
+PROCEDURE clearInputBuffer():
+    WHILE there are characters in input buffer:
+        READ and discard character
+    END WHILE
+END PROCEDURE
+
+MAIN PROGRAM:
+    DECLARE drawnMainNumbers[MAIN_NUMBERS_COUNT]
+    DECLARE drawnStarNumbers[STAR_NUMBERS_COUNT]
+    DECLARE userMainNumbers[MAIN_NUMBERS_COUNT]
+    DECLARE userStarNumbers[STAR_NUMBERS_COUNT]
+    DECLARE option, mainMatches, starMatches AS INTEGER
+    
+    INITIALIZE random number generator with current time
+    
+    REPEAT:
+        PRINT "======================="
+        PRINT "    EURO MILLIONS"
+        PRINT "======================="
+        PRINT "1. Generate random ticket"
+        PRINT "2. Enter my own ticket"
+        PRINT "3. Exit"
+        PRINT "Choice: "
+        
+        READ option
+        
+        IF input read fails THEN:
+            PRINT "Invalid option!"
+            clearInputBuffer()
+            CONTINUE
+        END IF
+        
+        SWITCH option:
+            CASE 1:
+                generateTicket(userMainNumbers, userStarNumbers)
+                displayTicket(userMainNumbers, userStarNumbers, "=== YOUR TICKET ===")
+                
+            CASE 2:
+                getUserTicket(userMainNumbers, userStarNumbers)
+                displayTicket(userMainNumbers, userStarNumbers, "=== YOUR TICKET ===")
+                
+            CASE 3:
+                PRINT "Goodbye!"
+                EXIT PROGRAM
+                
+            DEFAULT:
+                PRINT "Invalid option!"
+                CONTINUE
+        END SWITCH
+        
+        // Draw winning numbers
+        PRINT "=== DRAW ==="
+        generateTicket(drawnMainNumbers, drawnStarNumbers)
+        displayTicket(drawnMainNumbers, drawnStarNumbers, "Drawn numbers:")
+        
+        // Check results
+        mainMatches = countMatches(userMainNumbers, drawnMainNumbers, MAIN_NUMBERS_COUNT)
+        starMatches = countMatches(userStarNumbers, drawnStarNumbers, STAR_NUMBERS_COUNT)
+        
+        PRINT "=== RESULTS ==="
+        PRINT "Main number matches: ", mainMatches, "/", MAIN_NUMBERS_COUNT
+        PRINT "Star number matches: ", starMatches, "/", STAR_NUMBERS_COUNT
+        
+        // Determine prize
+        PRINT "=== PRIZE ==="
+        IF mainMatches = 5 AND starMatches = 2 THEN:
+            PRINT "1st PRIZE! Jackpot!"
+        ELSE IF mainMatches = 5 AND starMatches = 1 THEN:
+            PRINT "2nd PRIZE!"
+        ELSE IF mainMatches = 5 AND starMatches = 0 THEN:
+            PRINT "3rd PRIZE!"
+        ELSE IF mainMatches = 4 AND starMatches = 2 THEN:
+            PRINT "4th PRIZE!"
+        ELSE IF mainMatches = 4 AND starMatches = 1 THEN:
+            PRINT "5th PRIZE!"
+        ELSE IF mainMatches = 4 AND starMatches = 0 THEN:
+            PRINT "6th PRIZE!"
+        ELSE IF mainMatches = 3 AND starMatches = 2 THEN:
+            PRINT "7th PRIZE!"
+        ELSE IF mainMatches = 2 AND starMatches = 2 THEN:
+            PRINT "8th PRIZE!"
+        ELSE IF mainMatches = 3 AND starMatches = 1 THEN:
+            PRINT "9th PRIZE!"
+        ELSE IF mainMatches = 3 AND starMatches = 0 THEN:
+            PRINT "10th PRIZE!"
+        ELSE IF mainMatches = 1 AND starMatches = 2 THEN:
+            PRINT "11th PRIZE!"
+        ELSE IF mainMatches = 2 AND starMatches = 1 THEN:
+            PRINT "12th PRIZE!"
+        ELSE IF mainMatches = 2 AND starMatches = 0 THEN:
+            PRINT "13th PRIZE!"
+        ELSE:
+            PRINT "No prize won."
+        END IF
+        
+        PRINT "Press Enter to continue..."
+        clearInputBuffer()
+        WAIT for Enter key press
+        
+    UNTIL option = 3
+    
+END PROGRAM
