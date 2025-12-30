@@ -1,0 +1,632 @@
+PROGRAMA: EUROMILHÕES - SISTEMA DE APOSTAS
+==========================================
+
+CONSTANTES:
+    NUM_NUMEROS <- 5
+    NUM_ESTRELAS <- 2
+    MAX_NUMEROS <- 50
+    MAX_ESTRELAS <- 12
+    MAX_APOSTAS <- 5
+    NOME_ARQUIVO <- "euromilhoes.csv"
+    USERNAME <- "admin"
+    PASSWORD <- "admin123"
+
+ESTRUTURAS DE DADOS:
+
+    Estrutura Aposta {
+        numeros[NUM_NUMEROS]
+        estrelas[NUM_ESTRELAS]
+    }
+    
+    Estrutura ApostaCompleta {
+        aposta: Aposta
+        sorteio: Aposta
+        acertos_numeros: inteiro
+        acertos_estrelas: inteiro
+        id_premio: inteiro
+        descricao_premio: texto
+        valor_premio: real
+        premio_total_jogo: real
+    }
+    
+    Estrutura CategoriaPremio {
+        id: inteiro
+        acertos_numeros: inteiro
+        acertos_estrelas: inteiro
+        descricao: texto
+        percentagem: real
+    }
+
+==========================================
+
+funcao printNumeroBoard() {
+    print("===== TABELA DE NUMEROS ====")
+    print("| 1  2  3  4  5  6  7    |")
+    print("| 8  9  10 11 12 13 14   |")
+    print("| 15 16 17 18 19 20 21   |")
+    print("| 22 23 24 25 26 27 28   |")
+    print("| 29 30 31 32 33 34 35   |")
+    print("| 36 37 38 39 40 41 42   |")
+    print("| 43 44 45 46 47 48 49   |")
+    print("| 50                     |")
+    print("============================")
+}
+
+funcao printEstrelaBoard() {
+    print("== TABELA DE ESTRELAS ==")
+    print("| 1  2  3  4  5  6   |")
+    print("| 7  8  9  10 11 12  |")
+    print("========================")
+}
+
+funcao fazerLogin() -> booleano {
+    print("=== LOGIN NECESSARIO ===")
+    print("Nome de utilizador: ")
+    ler(username)
+    
+    print("Password: ")
+    ler(password)
+    
+    if (username == USERNAME && password == PASSWORD) {
+        print("Login bem-sucedido! Acesso concedido.")
+        return verdadeiro
+    } else {
+        print("Credenciais incorretas. Acesso negado.")
+        return falso
+    }
+}
+
+funcao ordenar(array[], tamanho) {
+    for i <- 0; i < tamanho - 1; i++ {
+        for j <- 0; j < tamanho - i - 1; j++ {
+            if (array[j] > array[j + 1]) {
+                temp <- array[j]
+                array[j] <- array[j + 1]
+                array[j + 1] <- temp
+            }
+        }
+    }
+}
+
+funcao numeroRepetido(array[], tamanho, numero) -> booleano {
+    for i <- 0; i < tamanho; i++ {
+        if (array[i] == numero) {
+            return verdadeiro
+        }
+    }
+    return falso
+}
+
+funcao mostrarAposta(numeros[], estrelas[], titulo) {
+    if (titulo != vazio) {
+        print(titulo)
+    }
+    
+    print("Numeros: ")
+    for i <- 0; i < NUM_NUMEROS; i++ {
+        print(numeros[i])
+    }
+    
+    print("Estrelas: ")
+    for i <- 0; i < NUM_ESTRELAS; i++ {
+        print(estrelas[i])
+    }
+}
+
+funcao mostrarApostaComIndices(numeros[], estrelas[]) {
+    print("Numeros:")
+    for i <- 0; i < NUM_NUMEROS; i++ {
+        print("[", i + 1, "]", numeros[i])
+    }
+    
+    print("Estrelas:")
+    for i <- 0; i < NUM_ESTRELAS; i++ {
+        print("[", i + 1, "]", estrelas[i])
+    }
+}
+
+funcao lerPremioTotal() -> real {
+    print("Qual o valor total do premio em jogo?")
+    
+    do {
+        ler(premio)
+        if (premio <= 0) {
+            print("Valor invalido! O premio deve ser maior que 0")
+        }
+    } while (premio <= 0)
+    
+    return premio
+}
+
+funcao lerApostaUsuario(numeros[], estrelas[]) {
+    // Inicializar arrays
+    for i <- 0; i < NUM_NUMEROS; i++ {
+        numeros[i] <- 0
+    }
+    
+    for i <- 0; i < NUM_ESTRELAS; i++ {
+        estrelas[i] <- 0
+    }
+    
+    // Ler números
+    print("Insira", NUM_NUMEROS, "numeros (1-50):")
+    
+    for i <- 0; i < NUM_NUMEROS; i++ {
+        do {
+            printNumeroBoard()
+            print("Numero", i + 1, ": ")
+            ler(valor)
+            
+            if (valor < 1 || valor > MAX_NUMEROS) {
+                print("Numero invalido! Deve ser entre 1 e 50.")
+                continue
+            }
+            
+            if (numeroRepetido(numeros, i, valor)) {
+                print("Numero repetido! Escolha outro.")
+                continue
+            }
+            
+            numeros[i] <- valor
+            break
+        } while (verdadeiro)
+    }
+    
+    // Ordenar números
+    ordenar(numeros, NUM_NUMEROS)
+    
+    // Permitir correções
+    do {
+        print("Numeros escolhidos (ordenados):")
+        for i <- 0; i < NUM_NUMEROS; i++ {
+            print(numeros[i])
+        }
+        
+        print("Pretende trocar algum numero? (S/N): ")
+        ler(resposta)
+        
+        if (resposta == 'N') {
+            break
+        }
+        
+        if (resposta == 'S') {
+            do {
+                print("Indique a posicao a alterar (1-", NUM_NUMEROS, "): ")
+                ler(pos)
+            } while (pos < 1 || pos > NUM_NUMEROS)
+            
+            do {
+                print("Novo numero: ")
+                ler(novo_num)
+            } while (novo_num < 1 || novo_num > MAX_NUMEROS || numeroRepetido(numeros, NUM_NUMEROS, novo_num))
+            
+            numeros[pos - 1] <- novo_num
+            ordenar(numeros, NUM_NUMEROS)
+        }
+    } while (resposta != 'N')
+    
+    // Ler estrelas
+    print("Insira", NUM_ESTRELAS, "estrelas (1-12):")
+    
+    for i <- 0; i < NUM_ESTRELAS; i++ {
+        do {
+            printEstrelaBoard()
+            print("Estrela", i + 1, ": ")
+            ler(valor)
+            
+            if (valor < 1 || valor > MAX_ESTRELAS) {
+                print("Estrela invalida! Deve ser entre 1 e 12.")
+                continue
+            }
+            
+            if (numeroRepetido(estrelas, i, valor)) {
+                print("Estrela repetida! Escolha outra.")
+                continue
+            }
+            
+            estrelas[i] <- valor
+            break
+        } while (verdadeiro)
+    }
+    
+    // Ordenar estrelas
+    ordenar(numeros, NUM_NUMEROS)
+    ordenar(estrelas, NUM_ESTRELAS)
+}
+
+funcao corrigirAposta(numeros[], estrelas[]) {
+    print("=== CORRIGIR APOSTA ===")
+    print("1. Corrigir um numero")
+    print("2. Corrigir uma estrela")
+    print("Escolha a opcao: ")
+    ler(opcao)
+    
+    if (opcao == 1) {
+        print("Qual numero deseja corrigir? (1 a", NUM_NUMEROS, "): ")
+        ler(indice)
+        
+        if (indice < 1 || indice > NUM_NUMEROS) {
+            print("Indice invalido!")
+            return
+        }
+        
+        indice <- indice - 1
+        
+        do {
+            print("Digite o novo numero (1-50): ")
+            ler(novo_valor)
+            
+            if (novo_valor < 1 || novo_valor > MAX_NUMEROS) {
+                print("Numero invalido!")
+                continue
+            }
+            
+            repetido <- falso
+            for i <- 0; i < NUM_NUMEROS; i++ {
+                if (i != indice && numeros[i] == novo_valor) {
+                    repetido <- verdadeiro
+                    break
+                }
+            }
+            
+            if (repetido) {
+                print("Numero repetido! Escolha outro.")
+                continue
+            }
+            
+            numeros[indice] <- novo_valor
+            ordenar(numeros, NUM_NUMEROS)
+            break
+        } while (verdadeiro)
+        
+    } else if (opcao == 2) {
+        print("Qual estrela deseja corrigir? (1 a", NUM_ESTRELAS, "): ")
+        ler(indice)
+        
+        if (indice < 1 || indice > NUM_ESTRELAS) {
+            print("Indice invalido!")
+            return
+        }
+        
+        indice <- indice - 1
+        
+        do {
+            print("Digite a nova estrela (1-12): ")
+            ler(novo_valor)
+            
+            if (novo_valor < 1 || novo_valor > MAX_ESTRELAS) {
+                print("Estrela invalida!")
+                continue
+            }
+            
+            repetido <- falso
+            for i <- 0; i < NUM_ESTRELAS; i++ {
+                if (i != indice && estrelas[i] == novo_valor) {
+                    repetido <- verdadeiro
+                    break
+                }
+            }
+            
+            if (repetido) {
+                print("Estrela repetida! Escolha outra.")
+                continue
+            }
+            
+            estrelas[indice] <- novo_valor
+            ordenar(estrelas, NUM_ESTRELAS)
+            break
+        } while (verdadeiro)
+        
+    } else {
+        print("Opcao invalida!")
+    }
+}
+
+funcao gerarSorteio(numeros[], estrelas[]) {
+    // Gerar números aleatórios únicos
+    for i <- 0; i < NUM_NUMEROS; i++ {
+        do {
+            num <- numeroAleatorio(1, MAX_NUMEROS)
+        } while (numeroRepetido(numeros, i, num))
+        numeros[i] <- num
+    }
+    
+    // Gerar estrelas aleatórias únicas
+    for i <- 0; i < NUM_ESTRELAS; i++ {
+        do {
+            est <- numeroAleatorio(1, MAX_ESTRELAS)
+        } while (numeroRepetido(estrelas, i, est))
+        estrelas[i] <- est
+    }
+    
+    // Ordenar
+    ordenar(numeros, NUM_NUMEROS)
+    ordenar(estrelas, NUM_ESTRELAS)
+}
+
+funcao contarAcertos(aposta[], sorteio[], tamanho) -> inteiro {
+    acertos <- 0
+    
+    for i <- 0; i < tamanho; i++ {
+        for j <- 0; j < tamanho; j++ {
+            if (aposta[i] == sorteio[j]) {
+                acertos <- acertos + 1
+                break
+            }
+        }
+    }
+    
+    return acertos
+}
+
+funcao inicializarCategoriasPremio(categorias[]) {
+    categorias[0] <- {1, 5, 2, "5 numeros + 2 estrelas", 0.50}
+    categorias[1] <- {2, 5, 1, "5 numeros + 1 estrela", 0.15}
+    categorias[2] <- {3, 5, 0, "5 numeros + 0 estrelas", 0.10}
+    categorias[3] <- {4, 4, 2, "4 numeros + 2 estrelas", 0.07}
+    categorias[4] <- {5, 4, 1, "4 numeros + 1 estrela", 0.05}
+    categorias[5] <- {6, 4, 0, "4 numeros + 0 estrelas", 0.03}
+    categorias[6] <- {7, 3, 2, "3 numeros + 2 estrelas", 0.02}
+    categorias[7] <- {8, 3, 1, "3 numeros + 1 estrela", 0.015}
+    categorias[8] <- {9, 3, 0, "3 numeros + 0 estrelas", 0.010}
+    categorias[9] <- {10, 2, 2, "2 numeros + 2 estrelas", 0.008}
+    categorias[10] <- {11, 2, 1, "2 numeros + 1 estrela", 0.006}
+    categorias[11] <- {12, 1, 2, "1 numero + 2 estrelas", 0.004}
+    categorias[12] <- {13, 0, 2, "0 numeros + 2 estrelas", 0.002}
+}
+
+funcao verificarCategoriaPremio(categorias[], acertos_numeros, acertos_estrelas) -> inteiro {
+    for i <- 0; i < 13; i++ {
+        if (acertos_numeros == categorias[i].acertos_numeros && acertos_estrelas == categorias[i].acertos_estrelas) {
+            return categorias[i].id
+        }
+    }
+    
+    return 0
+}
+
+funcao calcularValorPremio(id_premio, premio_total, categorias[]) -> real {
+    if (id_premio == 0) {
+        return 0.0
+    }
+    
+    return premio_total * categorias[id_premio - 1].percentagem
+}
+
+funcao mostrarMenuPrincipal() {
+    limparEcran()
+    print("===================================")
+    print("1. Inserir a minha aposta")
+    print("2. Admin")
+    print("3. Sair")
+    print("===================================")
+    print("Escolha: ")
+}
+
+funcao salvarApostaCompletaCSV(ac: ApostaCompleta) {
+    abrir arquivo "euromilhoes.csv" para anexar
+    
+    if (arquivo == NULO) {
+        print("Erro ao abrir o arquivo")
+        return
+    }
+    
+    // Escrever números da aposta
+    for i <- 0; i < NUM_NUMEROS; i++ {
+        escrever(arquivo, ac.aposta.numeros[i])
+    }
+    escrever(arquivo, ";")
+    
+    // Escrever estrelas da aposta
+    for i <- 0; i < NUM_ESTRELAS; i++ {
+        escrever(arquivo, ac.aposta.estrelas[i])
+    }
+    escrever(arquivo, ";")
+    
+    // Escrever números do sorteio
+    for i <- 0; i < NUM_NUMEROS; i++ {
+        escrever(arquivo, ac.sorteio.numeros[i])
+    }
+    escrever(arquivo, ";")
+    
+    // Escrever estrelas do sorteio
+    for i <- 0; i < NUM_ESTRELAS; i++ {
+        escrever(arquivo, ac.sorteio.estrelas[i])
+    }
+    escrever(arquivo, ";")
+    
+    // Escrever dados do prêmio
+    escrever(arquivo, ac.acertos_numeros, ";")
+    escrever(arquivo, ac.acertos_estrelas, ";")
+    escrever(arquivo, ac.id_premio, ";")
+    escrever(arquivo, ac.descricao_premio, ";")
+    escrever(arquivo, ac.valor_premio, ";")
+    escrever(arquivo, ac.premio_total_jogo)
+    
+    fechar(arquivo)
+}
+
+funcao lerUltimasApostas() {
+    abrir arquivo "euromilhoes.csv" para leitura
+    
+    if (arquivo == NULO) {
+        print("Nenhuma aposta registrada ainda.")
+        return
+    }
+    
+    linhas[MAX_APOSTAS]
+    total_linhas <- 0
+    
+    // Ler todas as linhas, mantendo apenas as últimas MAX_APOSTAS
+    while (existem linhas no arquivo) {
+        ler(linha)
+        
+        if (total_linhas < MAX_APOSTAS) {
+            linhas[total_linhas] <- linha
+            total_linhas <- total_linhas + 1
+        } else {
+            // Deslocar linhas para cima e adicionar nova no final
+            for i <- 0; i < MAX_APOSTAS - 1; i++ {
+                linhas[i] <- linhas[i + 1]
+            }
+            linhas[MAX_APOSTAS - 1] <- linha
+        }
+    }
+    
+    fechar(arquivo)
+    
+    if (total_linhas == 0) {
+        print("Nenhuma aposta registrada ainda.")
+        return
+    }
+    
+    // Mostrar apostas em ordem inversa (mais recente primeiro)
+    for i <- total_linhas - 1; i >= 0; i-- {
+        // Parsear linha e criar ApostaCompleta
+        ac <- parsearLinha(linhas[i])
+        mostrarApostaCompleta(ac, total_linhas - i)
+    }
+}
+
+funcao mostrarApostaCompleta(ac: ApostaCompleta, numero_aposta) {
+    print("APOSTA", numero_aposta, ":")
+    print("==========================================================")
+    
+    print("Sua Aposta:")
+    mostrarAposta(ac.aposta.numeros, ac.aposta.estrelas, "")
+    
+    print("Numeros Sorteados:")
+    mostrarAposta(ac.sorteio.numeros, ac.sorteio.estrelas, "")
+    
+    print("Resultado:")
+    print("Acertos nos numeros:", ac.acertos_numeros, "/", NUM_NUMEROS)
+    print("Acertos nas estrelas:", ac.acertos_estrelas, "/", NUM_ESTRELAS)
+    
+    print("Premio:")
+    if (ac.id_premio == 0) {
+        print("Nenhum premio ganho")
+    } else {
+        print("Categoria:", ac.id_premio, "Premio")
+        print("Descricao:", ac.descricao_premio)
+        print("Valor do premio:", ac.valor_premio)
+        print("Premio total do jogo:", ac.premio_total_jogo)
+    }
+}
+
+==========================================
+PROGRAMA PRINCIPAL:
+==========================================
+
+main() {
+    ac: ApostaCompleta
+    opcao: inteiro
+    correcao: caractere
+    
+    // Inicializar gerador de números aleatórios
+    inicializarAleatorio()
+    
+    do {
+        mostrarMenuPrincipal()
+        ler(opcao)
+        
+        limparEcran()
+        
+        if (opcao == 1) {
+            // Inserir aposta
+            print("=== INSERIR APOSTA ===")
+            
+            // Ler aposta do usuário
+            lerApostaUsuario(ac.aposta.numeros, ac.aposta.estrelas)
+            
+            limparEcran()
+            
+            // Permitir correções
+            do {
+                print("=== SUA APOSTA ATUAL ===")
+                mostrarApostaComIndices(ac.aposta.numeros, ac.aposta.estrelas)
+                
+                print("Deseja corrigir algum numero ou estrela? (S/N): ")
+                ler(correcao)
+                
+                if (correcao == 'S' || correcao == 's') {
+                    corrigirAposta(ac.aposta.numeros, ac.aposta.estrelas)
+                }
+            } while (correcao == 'S' || correcao == 's')
+            
+            limparEcran()
+            
+            // Mostrar aposta final
+            print("=== APOSTA FINAL CONFIRMADA ===")
+            mostrarAposta(ac.aposta.numeros, ac.aposta.estrelas, "")
+            
+            // Gerar sorteio
+            print("=== SORTEIO ===")
+            gerarSorteio(ac.sorteio.numeros, ac.sorteio.estrelas)
+            mostrarAposta(ac.sorteio.numeros, ac.sorteio.estrelas, "")
+            
+            // Contar acertos
+            ac.acertos_numeros <- contarAcertos(ac.aposta.numeros, ac.sorteio.numeros, NUM_NUMEROS)
+            ac.acertos_estrelas <- contarAcertos(ac.aposta.estrelas, ac.sorteio.estrelas, NUM_ESTRELAS)
+            
+            // Verificar prêmio
+            categorias[13]: CategoriaPremio
+            inicializarCategoriasPremio(categorias)
+            
+            ac.id_premio <- verificarCategoriaPremio(categorias, ac.acertos_numeros, ac.acertos_estrelas)
+            ac.valor_premio <- calcularValorPremio(ac.id_premio, ac.premio_total_jogo, categorias)
+            
+            if (ac.id_premio > 0) {
+                ac.descricao_premio <- categorias[ac.id_premio - 1].descricao
+            } else {
+                ac.descricao_premio <- "Sem premio"
+            }
+            
+            // Mostrar resultado
+            print("=== PREMIO ===")
+            if (ac.id_premio == 0) {
+                print("Infelizmente nao ganhou nenhum premio. Tente novamente!")
+            } else {
+                print("Categoria:", ac.id_premio, "Premio")
+                print("Descricao:", ac.descricao_premio)
+                print("Valor do premio:", ac.valor_premio)
+            }
+            
+            // Salvar aposta
+            salvarApostaCompletaCSV(ac)
+            print("Aposta salva!")
+            
+            print("Pressione Enter para continuar...")
+            esperarEnter()
+            
+        } else if (opcao == 2) {
+            // Admin
+            if (fazerLogin()) {
+                print("=== MENU ADMIN ===")
+                print("1. Ver ultimas apostas")
+                print("2. Inserir valor do premio em jogo")
+                print("Escolha: ")
+                ler(opcao_admin)
+                
+                limparEcran()
+                
+                if (opcao_admin == 1) {
+                    lerUltimasApostas()
+                } else if (opcao_admin == 2) {
+                    ac.premio_total_jogo <- lerPremioTotal()
+                    print("Valor do premio em jogo atualizado para:", ac.premio_total_jogo)
+                }
+            }
+            
+            print("Pressione Enter para continuar...")
+            esperarEnter()
+            
+        } else if (opcao == 3) {
+            // Sair
+            print("Adeus! Obrigado por usar o programa.")
+            
+        } else {
+            print("Opcao invalida! Tente novamente.")
+        }
+        
+    } while (opcao != 3)
+}
